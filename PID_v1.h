@@ -81,6 +81,9 @@ class PID {
 		PIDDirection GetDirection() {
 			return controllerDirection;   //
 		}
+		bool JustCalculated() const {
+			return justCalced;
+		}
 
 	private:
 		void Initialize();
@@ -116,6 +119,7 @@ class PID {
 		sample_time_type SampleTime;
 		value_type outMin, outMax;
 		bool inAuto;
+		bool justCalced;			// * flag gets set for one cycle after the pid calculates
 };
 
 typedef PID<double> PIDd;

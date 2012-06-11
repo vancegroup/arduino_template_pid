@@ -12,7 +12,8 @@ inline PID<T, TuningT>::PID(PID<T, TuningT>::value_type & Input, PID<T, TuningT>
 	, mySetpoint(&Setpoint)
 	, lastTime(millis() - SampleTime)
 	, SampleTime(100)
-	, inAuto(false) {
+	, inAuto(false)
+	, justCalced(false) {
 	PID::SetOutputLimits(0, 255);				//default output limit corresponds to
 	//the arduino pwm limits
 
@@ -29,6 +30,8 @@ inline PID<T, TuningT>::PID(PID<T, TuningT>::value_type & Input, PID<T, TuningT>
  **********************************************************************************/
 template<typename T, typename TuningT>
 inline void PID<T, TuningT>::Compute() {
+
+	justCalced=false;
 	if (!inAuto) {
 		return;
 	}
@@ -54,6 +57,7 @@ inline void PID<T, TuningT>::Compute() {
 		/*Remember some variables for next time*/
 		lastInput = input;
 		lastTime = now;
+		justCalced=true;
 	}
 }
 
