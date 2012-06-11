@@ -85,6 +85,15 @@ class PID {
 	private:
 		void Initialize();
 
+		template<typename U>
+		void applyOutputLimit(U & val) {
+			if (val > outMax) {
+				val = outMax;
+			} else if (val < outMin) {
+				val = outMin;
+			}
+		}
+
 		tuning_value_type dispKp;				// * we'll hold on to the tuning parameters in user-entered
 		tuning_value_type dispKi;				//   format for display purposes
 		tuning_value_type dispKd;				//

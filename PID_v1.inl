@@ -48,12 +48,7 @@ inline void PID<T, TuningT>::Compute() {
 
 		/*Compute PID Output*/
 		value_type output = static_cast<value_type>(kp * error + ITerm - kd * dInput);
-
-		if (output > outMax) {
-			output = outMax;
-		} else if (output < outMin) {
-			output = outMin;
-		}
+		applyOutputLimit(output);
 		*myOutput = output;
 
 		/*Remember some variables for next time*/
@@ -121,17 +116,8 @@ inline void PID<T, TuningT>::SetOutputLimits(T Min, T Max) {
 	outMax = Max;
 
 	if (inAuto) {
-		if (*myOutput > outMax) {
-			*myOutput = outMax;
-		} else if (*myOutput < outMin) {
-			*myOutput = outMin;
-		}
-
-		if (ITerm > outMax) {
-			ITerm = outMax;
-		} else if (ITerm < outMin) {
-			ITerm = outMin;
-		}
+		applyOutputLimit(*myOutput);
+		applyOutputLimit(ITerm);
 	}
 }
 
@@ -158,11 +144,7 @@ template<typename T, typename TuningT>
 inline void PID<T, TuningT>::Initialize() {
 	ITerm = *myOutput;
 	lastInput = *myInput;
-	if (ITerm > outMax) {
-		ITerm = outMax;
-	} else if (ITerm < outMin) {
-		ITerm = outMin;
-	}
+	applyOutputLimit(ITerm);
 }
 
 /* SetControllerDirection(...)*************************************************
