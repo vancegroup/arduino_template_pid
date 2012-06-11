@@ -1,6 +1,15 @@
+/**********************************************************************************************
+ * Arduino PID Library - Version 1.0.1
+ * by Brett Beauregard <br3ttb@gmail.com> brettbeauregard.com
+ *
+ * This Library is licensed under a GPLv3 License
+ **********************************************************************************************/
+ 
+
 #ifndef PID_v1_h
 #define PID_v1_h
-#define LIBRARY_VERSION	1.0.0
+
+#define LIBRARY_VERSION	1.0.1
 
 #if ARDUINO >= 100
 #include "Arduino.h"
@@ -14,7 +23,6 @@ class PID {
 
 	public:
 		typedef T value_type;
-		typedef value_type * value_ptr;
 		typedef TuningT tuning_value_type;
 		typedef unsigned int sample_time_type;
 		typedef unsigned long timestamp_type;
