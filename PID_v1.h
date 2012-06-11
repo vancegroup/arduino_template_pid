@@ -109,6 +109,9 @@ class PID {
 		bool inAuto;
 };
 
+typedef PID<double> PIDd;
+typedef PID<int> PIDi;
+
 #include <PID_v1.inl>
 
 #endif
