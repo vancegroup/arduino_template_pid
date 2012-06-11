@@ -66,19 +66,19 @@ class PID {
 		* purposes.  this are the functions the PID Front-end uses for example
 		******************************************************************************/
 
-		tuning_value_type GetKp() {
+		tuning_value_type GetKp() const {
 			return dispKp;    // These functions query the pid for interal values.
 		}
-		tuning_value_type GetKi() {
+		tuning_value_type GetKi() const {
 			return dispKi;    //  they were created mainly for the pid front-end,
 		}
-		tuning_value_type GetKd() {
+		tuning_value_type GetKd() const {
 			return dispKd;    // where it's important to know what is actually
 		}
-		PIDMode GetMode() {
+		PIDMode GetMode() const {
 			return  inAuto ? AUTOMATIC : MANUAL;   //  inside the PID.
 		}
-		PIDDirection GetDirection() {
+		PIDDirection GetDirection() const {
 			return controllerDirection;   //
 		}
 		bool JustCalculated() const {
