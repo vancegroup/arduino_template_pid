@@ -37,6 +37,44 @@
 # error "Do not include arduino_template_pid.inl directly! It is include from within the .h file"
 #endif
 
+
+/* SetSampleTime(...) *********************************************************
+ * sets the period, in Milliseconds, at which the calculation is performed
+ ******************************************************************************/
+inline void GenericPIDBase::SetSampleTime(GenericPIDBase::sample_time_type NewSampleTime) {
+	if (NewSampleTime > 0) {
+		adjustGainsByTimeRatio(NewSampleTime, SampleTime);
+		SampleTime = NewSampleTime;
+	}
+}
+
+/* SetMode(...)****************************************************************
+ * Allows the controller Mode to be set to manual (0) or Automatic (non-zero)
+ * when the transition from manual to auto occurs, the controller is
+ * automatically initialized
+ ******************************************************************************/
+inline void GenericPIDBase::SetMode(GenericPIDBase::PIDMode Mode) {
+	bool newAuto = (Mode == AUTOMATIC);
+	if (newAuto && !_inAuto) {
+		/*we just went from manual to auto*/
+		enterAutomatic();
+	}
+	_inAuto = newAuto;
+}
+
+/* SetControllerDirection(...)*************************************************
+ * The PID will either be connected to a DIRECT acting process (+Output leads
+ * to +Input) or a REVERSE acting process(+Output leads to -Input.)  we need to
+ * know which one, because otherwise we may increase the output when we should
+ * be decreasing.  This is called from the constructor.
+ ******************************************************************************/
+inline void GenericPIDBase::SetControllerDirection(GenericPIDBase::PIDDirection Direction) {
+	if (_inAuto && Direction != _controllerDirection) {
+		invertGains();
+	}
+	controllerDirection = Direction;
+}
+
 /*Constructor (...)*********************************************************
  *    The parameters specified here are those for for which we can't set up
  *    reliable defaults, so we need to have the user set them.
@@ -49,16 +87,13 @@ inline GenericPID<T, TuningT>::GenericPID(GenericPID<T, TuningT>::value_type & I
         GenericPID<T, TuningT>::tuning_value_type Ki,
         GenericPID<T, TuningT>::tuning_value_type Kd,
         GenericPID<T, TuningT>::PIDDirection ControllerDirection)
-	: controllerDirection(ControllerDirection)
+	: GenericPIDBase(ControllerDirection)
 	, myInput(&Input)
 	, myOutput(&Output)
 	, mySetpoint(&Setpoint)
-	, lastTime(millis() - SampleTime)
-	, SampleTime(100)
+	, lastTime(GenericPIDBase::getNow() - GenericPIDBase::getSampleTime())
 	, outMin(0)		///< default output limit corresponds to the arduino pwm limits
-	, outMax(255)	///< default output limit corresponds to the arduino pwm limits
-	, inAuto(false)
-	, justCalced(false) {
+	, outMax(255)	///< default output limit corresponds to the arduino pwm limits {
 	SetTunings(Kp, Ki, Kd);
 }
 
@@ -71,11 +106,11 @@ inline GenericPID<T, TuningT>::GenericPID(GenericPID<T, TuningT>::value_type & I
 template<typename T, typename TuningT>
 inline void GenericPID<T, TuningT>::Compute() {
 
-	justCalced = false;
-	if (!inAuto) {
+	setCalculatedFlag(false);
+	if (!inAuto()) {
 		return;
 	}
-	timestamp_type now = millis();
+	timestamp_type now = getNow();
 	timestamp_type timeChange = (now - lastTime);
 	if (timeChange >= SampleTime) {
 		/*Compute all the working error variables*/
@@ -86,14 +121,12 @@ inline void GenericPID<T, TuningT>::Compute() {
 		value_type dInput = (input - lastInput);
 
 		/*Compute PID Output*/
-		value_type output = static_cast<value_type>(kp * error + ITerm - kd * dInput);
-		applyOutputLimit(output);
-		*myOutput = output;
+		*myOutput = getClampedToOutputLimit(static_cast<value_type>(kp * error + ITerm - kd * dInput));
 
 		/*Remember some variables for next time*/
 		lastInput = input;
 		lastTime = now;
-		justCalced = true;
+		setCalculatedFlag(true);
 	}
 }
 
@@ -115,25 +148,21 @@ inline void GenericPID<T, TuningT>::SetTunings(GenericPID<T, TuningT>::tuning_va
 	dispKi = Ki;
 	dispKd = Kd;
 
-	tuning_value_type SampleTimeInSec = static_cast<tuning_value_type>(SampleTime) / 1000;
+	tuning_value_type SampleTimeInSec = static_cast<tuning_value_type>(getSampleTime()) / 1000;
 	kp = controllerDirection * Kp;
 	ki = controllerDirection * Ki * SampleTimeInSec;
 	kd = controllerDirection * Kd / SampleTimeInSec;
 
 }
 
-/* SetSampleTime(...) *********************************************************
- * sets the period, in Milliseconds, at which the calculation is performed
- ******************************************************************************/
+
+
 template<typename T, typename TuningT>
-inline void GenericPID<T, TuningT>::SetSampleTime(GenericPID<T, TuningT>::sample_time_type NewSampleTime) {
-	if (NewSampleTime > 0) {
-		tuning_value_type ratio = static_cast<tuning_value_type>(NewSampleTime)
-		                          / static_cast<tuning_value_type>(SampleTime);
-		ki *= ratio;
-		kd /= ratio;
-		SampleTime = NewSampleTime;
-	}
+inline void GenericPID<T, TuningT>::adjustGainsByTimeRatio(GenericPIDBase::timestamp_type numerator, GenericPIDBase::timestamp_type denominator) {
+	tuning_value_type ratio = static_cast<tuning_value_type>(numerator)
+	                          / static_cast<tuning_value_type>(denominator);
+	ki *= ratio;
+	kd /= ratio;
 }
 
 /* SetOutputLimits(...)****************************************************
@@ -153,52 +182,30 @@ inline void GenericPID<T, TuningT>::SetOutputLimits(GenericPID<T, TuningT>::valu
 	outMin = Min;
 	outMax = Max;
 
-	if (inAuto) {
+	if (inAuto()) {
 		applyOutputLimit(*myOutput);
 		applyOutputLimit(ITerm);
 	}
 }
 
-/* SetMode(...)****************************************************************
- * Allows the controller Mode to be set to manual (0) or Automatic (non-zero)
- * when the transition from manual to auto occurs, the controller is
- * automatically initialized
- ******************************************************************************/
-template<typename T, typename TuningT>
-inline void GenericPID<T, TuningT>::SetMode(GenericPID<T, TuningT>::PIDMode Mode) {
-	bool newAuto = (Mode == AUTOMATIC);
-	if (newAuto && !inAuto) {
-		/*we just went from manual to auto*/
-		Initialize();
-	}
-	inAuto = newAuto;
-}
+
 
 /* Initialize()****************************************************************
  *	does all the things that need to happen to ensure a bumpless transfer
  *  from manual to automatic mode.
  ******************************************************************************/
 template<typename T, typename TuningT>
-inline void GenericPID<T, TuningT>::Initialize() {
-	ITerm = *myOutput;
+inline void GenericPID<T, TuningT>::enterAutomatic() {
+	ITerm = getClampedToOutputLimit(*myOutput);
 	lastInput = *myInput;
-	applyOutputLimit(ITerm);
 }
 
-/* SetControllerDirection(...)*************************************************
- * The PID will either be connected to a DIRECT acting process (+Output leads
- * to +Input) or a REVERSE acting process(+Output leads to -Input.)  we need to
- * know which one, because otherwise we may increase the output when we should
- * be decreasing.  This is called from the constructor.
- ******************************************************************************/
+
 template<typename T, typename TuningT>
-inline void GenericPID<T, TuningT>::SetControllerDirection(GenericPID<T, TuningT>::PIDDirection Direction) {
-	if (inAuto && Direction != controllerDirection) {
-		kp = - kp;
-		ki = - ki;
-		kd = - kd;
-	}
-	controllerDirection = Direction;
+inline void GenericPID<T, TuningT>::invertGains() {
+	kp *= -1;
+	ki *= -1;
+	kd *= -1;
 }
 
 

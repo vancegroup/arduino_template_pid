@@ -54,19 +54,10 @@
 # error "Not yet ported to this platform."
 #endif
 
-template<typename T = double, typename TuningT = double>
-class GenericPID {
-
-
+class GenericPIDBase {
 	public:
-		typedef T value_type;
-		typedef T value_ptr;
-		typedef TuningT tuning_value_type;
 		typedef unsigned int sample_time_type;
 		typedef unsigned long timestamp_type;
-
-		//Constants used in some of the functions below
-
 		enum PIDMode {
 			AUTOMATIC = 1,
 			MANUAL = 0
@@ -75,11 +66,67 @@ class GenericPID {
 			DIRECT = 1,
 			REVERSE = -1
 		};
+		GenericPIDBase(PIDDirection Direction = DIRECT)
+			: _controllerDirection(DIRECTION)
+			, _sampleTime(100)
+		{}
+
+
+		void SetMode(PIDMode Mode);               // * sets PID to either Manual (0) or Auto (non-0)
+
+		PIDMode GetMode() const {
+			return  _inAuto ? AUTOMATIC : MANUAL;
+		}
+		PIDDirection GetDirection() const {
+			return _controllerDirection;
+		}
+		bool JustCalculated() const {
+			return _justCalced;
+		}
+
+		void SetControllerDirection(PIDDirection);	  // * Sets the Direction, or "Action" of the controller. DIRECT
+		//   means the output will increase when error is positive. REVERSE
+		//   means the opposite.  it's very unlikely that this will be needed
+		//   once it is set in the constructor.
+		void SetSampleTime(sample_time_type NewSampleTime);              // * sets the frequency, in Milliseconds, with which
+		//   the PID calculation is performed.  default is 100
+
+	protected:
+		virtual void invertGains() = 0; // called by SetControllerDirection
+		virtual void enterAutomatic() = 0; // called by SetMode
+		virtual void adjustGainsByTimeRatio(timestamp_type numerator, timestamp_type denominator) = 0; // called by setSampleTime
+		timestamp_type getNow() const {
+			return millis();
+		}
+		sample_time_type getSampleTime() const {
+			return _sampleTime;
+		}
+		void setCalculatedFlag(bool val) {
+			_justCalced = true;
+		}
+		bool inAuto() const {
+			return _inAuto;
+		}
+	private:
+		PIDDirection _controllerDirection;
+		sample_time_type _sampleTime;
+		bool _inAuto;
+		bool _justCalced; // * flag gets set for one cycle after the pid calculates
+};
+
+template<typename T = double, typename TuningT = double>
+class GenericPID : public GenericPIDBase {
+
+
+	public:
+		typedef T value_type;
+		typedef T value_ptr;
+		typedef TuningT tuning_value_type;
+		using GenericPIDBase;
+
 		//commonly used functions **************************************************************************
 		GenericPID(value_type & Input, value_type & Output, value_type & Setpoint,        // * constructor.  links the PID to the Input, Output, and
 		           tuning_value_type Kp, tuning_value_type Ki, tuning_value_type Kd, PIDDirection Direction = DIRECT);     //   Setpoint.  Initial tuning parameters are also set here
-
-		void SetMode(PIDMode Mode);               // * sets PID to either Manual (0) or Auto (non-0)
 
 		void Compute();                       // * performs the PID calculation.  it should be
 		//   called every time loop() cycles. ON/OFF and
@@ -96,12 +143,7 @@ class GenericPID {
 		void SetTunings(tuning_value_type Kp, tuning_value_type Ki,       // * While most users will set the tunings once in the
 		                tuning_value_type Kd);         	  //   constructor, this function gives the user the option
 		//   of changing tunings during runtime for Adaptive control
-		void SetControllerDirection(PIDDirection);	  // * Sets the Direction, or "Action" of the controller. DIRECT
-		//   means the output will increase when error is positive. REVERSE
-		//   means the opposite.  it's very unlikely that this will be needed
-		//   once it is set in the constructor.
-		void SetSampleTime(sample_time_type NewSampleTime);              // * sets the frequency, in Milliseconds, with which
-		//   the PID calculation is performed.  default is 100
+
 
 
 
@@ -121,37 +163,38 @@ class GenericPID {
 		tuning_value_type GetKd() const {
 			return dispKd;    // where it's important to know what is actually
 		}
-		PIDMode GetMode() const {
-			return  inAuto ? AUTOMATIC : MANUAL;   //  inside the PID.
-		}
-		PIDDirection GetDirection() const {
-			return controllerDirection;   //
-		}
-		bool JustCalculated() const {
-			return justCalced;
-		}
+
+	protected:
+		void invertGains();
+		void enterAutomatic();
+		void adjustGainsByTimeRatio(timestamp_type numerator, timestamp_type denominator);
 
 	private:
-		void Initialize();
 
 		template<typename U>
-		void applyOutputLimit(U & val) {
+		void getClampedToOutputLimit(U val) {
+			U ret;
 			if (val > outMax) {
-				val = outMax;
+				ret = outMax;
 			} else if (val < outMin) {
-				val = outMin;
+				ret = outMin;
+			} else {
+				ret = val;
 			}
+			return ret;
+		}
+		template<typename U>
+		void applyOutputLimit(U & val) {
+			val = getClampedToOutputLimit(val)
 		}
 
-		tuning_value_type dispKp;				// * we'll hold on to the tuning parameters in user-entered
+		      tuning_value_type dispKp;				// * we'll hold on to the tuning parameters in user-entered
 		tuning_value_type dispKi;				//   format for display purposes
 		tuning_value_type dispKd;				//
 
 		tuning_value_type kp;                  // * (P)roportional Tuning Parameter
 		tuning_value_type ki;                  // * (I)ntegral Tuning Parameter
 		tuning_value_type kd;                  // * (D)erivative Tuning Parameter
-
-		PIDDirection controllerDirection;
 
 		value_ptr myInput;              // * Pointers to the Input, Output, and Setpoint variables
 		value_ptr myOutput;             //   This creates a hard link between the variables and the
@@ -162,10 +205,7 @@ class GenericPID {
 		tuning_value_type ITerm;
 		value_type lastInput;
 
-		sample_time_type SampleTime;
 		value_type outMin, outMax;
-		bool inAuto;
-		bool justCalced;			// * flag gets set for one cycle after the pid calculates
 };
 
 typedef GenericPID<double> PIDd;
