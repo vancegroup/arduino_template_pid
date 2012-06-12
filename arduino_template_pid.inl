@@ -49,19 +49,17 @@ inline GenericPID<T, TuningT>::GenericPID(GenericPID<T, TuningT>::value_type & I
         GenericPID<T, TuningT>::tuning_value_type Ki,
         GenericPID<T, TuningT>::tuning_value_type Kd,
         GenericPID<T, TuningT>::PIDDirection ControllerDirection)
-	: myInput(&Input)
+	: controllerDirection(ControllerDirection)
+	, myInput(&Input)
 	, myOutput(&Output)
 	, mySetpoint(&Setpoint)
 	, lastTime(millis() - SampleTime)
 	, SampleTime(100)
+	, outMin(0)		///< default output limit corresponds to the arduino pwm limits
+	, outMax(255)	///< default output limit corresponds to the arduino pwm limits
 	, inAuto(false)
 	, justCalced(false) {
-	SetOutputLimits(0, 255);				//default output limit corresponds to
-	//the arduino pwm limits
-
-	SetControllerDirection(ControllerDirection);
 	SetTunings(Kp, Ki, Kd);
-
 }
 
 
