@@ -1,17 +1,50 @@
-/**********************************************************************************************
- * Arduino PID Library - Version 1.0.1
- * by Brett Beauregard <br3ttb@gmail.com> brettbeauregard.com
- *
- * This Library is licensed under a GPLv3 License
- **********************************************************************************************/
+/** @file
+	@brief Template Implementations
+
+	@date 2008-2012
+
+	@author
+	Brett Beauregard
+	<br3ttb@gmail.com>
+	http://brettbeauregard.com
+
+	@author
+	Ryan Pavlik
+	<rpavlik@iastate.edu> and <abiryan@ryand.net>
+	http://academic.cleardefinition.com/
+	Iowa State University Virtual Reality Applications Center
+	Human-Computer Interaction Graduate Program
+*/
+
+/*
+	Copyright 2008-2011 Brett Beauregard
+	Copyright Iowa State University 2012.
+
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, version 3.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /*Constructor (...)*********************************************************
  *    The parameters specified here are those for for which we can't set up
  *    reliable defaults, so we need to have the user set them.
  ***************************************************************************/
 template<typename T, typename TuningT>
-inline PID<T, TuningT>::PID(PID<T, TuningT>::value_type & Input, PID<T, TuningT>::value_type & Output, PID<T, TuningT>::value_type & Setpoint,
-                            PID<T, TuningT>::tuning_value_type Kp, PID<T, TuningT>::tuning_value_type Ki, PID<T, TuningT>::tuning_value_type Kd, PID<T, TuningT>::PIDDirection ControllerDirection)
+inline GenericPID<T, TuningT>::GenericPID(GenericPID<T, TuningT>::value_type & Input,
+        GenericPID<T, TuningT>::value_type & Output,
+        GenericPID<T, TuningT>::value_type & Setpoint,
+        GenericPID<T, TuningT>::tuning_value_type Kp,
+        GenericPID<T, TuningT>::tuning_value_type Ki,
+        GenericPID<T, TuningT>::tuning_value_type Kd,
+        GenericPID<T, TuningT>::PIDDirection ControllerDirection)
 	: myInput(&Input)
 	, myOutput(&Output)
 	, mySetpoint(&Setpoint)
@@ -34,9 +67,9 @@ inline PID<T, TuningT>::PID(PID<T, TuningT>::value_type & Input, PID<T, TuningT>
  *   pid Output needs to be computed
  **********************************************************************************/
 template<typename T, typename TuningT>
-inline void PID<T, TuningT>::Compute() {
+inline void GenericPID<T, TuningT>::Compute() {
 
-	justCalced=false;
+	justCalced = false;
 	if (!inAuto) {
 		return;
 	}
@@ -62,7 +95,7 @@ inline void PID<T, TuningT>::Compute() {
 		/*Remember some variables for next time*/
 		lastInput = input;
 		lastTime = now;
-		justCalced=true;
+		justCalced = true;
 	}
 }
 
@@ -73,7 +106,9 @@ inline void PID<T, TuningT>::Compute() {
  * be adjusted on the fly during normal operation
  ******************************************************************************/
 template<typename T, typename TuningT>
-inline void PID<T, TuningT>::SetTunings(TuningT Kp, TuningT Ki, TuningT Kd) {
+inline void GenericPID<T, TuningT>::SetTunings(GenericPID<T, TuningT>::tuning_value_type Kp,
+        GenericPID<T, TuningT>::tuning_value_type Ki,
+        GenericPID<T, TuningT>::tuning_value_type Kd) {
 	if (Kp < 0 || Ki < 0 || Kd < 0) {
 		return;
 	}
@@ -98,10 +133,10 @@ inline void PID<T, TuningT>::SetTunings(TuningT Kp, TuningT Ki, TuningT Kd) {
  * sets the period, in Milliseconds, at which the calculation is performed
  ******************************************************************************/
 template<typename T, typename TuningT>
-inline void PID<T, TuningT>::SetSampleTime(PID<T, TuningT>::sample_time_type NewSampleTime) {
+inline void GenericPID<T, TuningT>::SetSampleTime(GenericPID<T, TuningT>::sample_time_type NewSampleTime) {
 	if (NewSampleTime > 0) {
 		tuning_value_type ratio = static_cast<tuning_value_type>(NewSampleTime)
-		                           / static_cast<tuning_value_type>(SampleTime);
+		                          / static_cast<tuning_value_type>(SampleTime);
 		ki *= ratio;
 		kd /= ratio;
 		SampleTime = NewSampleTime;
@@ -117,7 +152,8 @@ inline void PID<T, TuningT>::SetSampleTime(PID<T, TuningT>::sample_time_type New
  *  here.
  **************************************************************************/
 template<typename T, typename TuningT>
-inline void PID<T, TuningT>::SetOutputLimits(T Min, T Max) {
+inline void GenericPID<T, TuningT>::SetOutputLimits(GenericPID<T, TuningT>::value_type Min,
+        GenericPID<T, TuningT>::value_type Max) {
 	if (Min >= Max) {
 		return;
 	}
@@ -136,7 +172,7 @@ inline void PID<T, TuningT>::SetOutputLimits(T Min, T Max) {
  * automatically initialized
  ******************************************************************************/
 template<typename T, typename TuningT>
-inline void PID<T, TuningT>::SetMode(PID<T, TuningT>::PIDMode Mode) {
+inline void GenericPID<T, TuningT>::SetMode(GenericPID<T, TuningT>::PIDMode Mode) {
 	bool newAuto = (Mode == AUTOMATIC);
 	if (newAuto == !inAuto) {
 		/*we just went from manual to auto*/
@@ -150,7 +186,7 @@ inline void PID<T, TuningT>::SetMode(PID<T, TuningT>::PIDMode Mode) {
  *  from manual to automatic mode.
  ******************************************************************************/
 template<typename T, typename TuningT>
-inline void PID<T, TuningT>::Initialize() {
+inline void GenericPID<T, TuningT>::Initialize() {
 	ITerm = *myOutput;
 	lastInput = *myInput;
 	applyOutputLimit(ITerm);
@@ -163,7 +199,7 @@ inline void PID<T, TuningT>::Initialize() {
  * be decreasing.  This is called from the constructor.
  ******************************************************************************/
 template<typename T, typename TuningT>
-inline void PID<T, TuningT>::SetControllerDirection(PID<T, TuningT>::PIDDirection Direction) {
+inline void GenericPID<T, TuningT>::SetControllerDirection(GenericPID<T, TuningT>::PIDDirection Direction) {
 	if (inAuto && Direction != controllerDirection) {
 		kp = - kp;
 		ki = - ki;

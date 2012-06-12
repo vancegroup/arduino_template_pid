@@ -1,24 +1,61 @@
-/**********************************************************************************************
- * Arduino PID Library - Version 1.0.1
- * by Brett Beauregard <br3ttb@gmail.com> brettbeauregard.com
- *
- * This Library is licensed under a GPLv3 License
- **********************************************************************************************/
- 
+/** @file
+	@brief Header
 
-#ifndef PID_v1_h
-#define PID_v1_h
+	@date 2008-2012
 
-#define LIBRARY_VERSION	1.0.1
+	@author
+	Brett Beauregard
+	<br3ttb@gmail.com>
+	http://brettbeauregard.com
 
-#if ARDUINO >= 100
-#include "Arduino.h"
+	@author
+	Ryan Pavlik
+	<rpavlik@iastate.edu> and <abiryan@ryand.net>
+	http://academic.cleardefinition.com/
+	Iowa State University Virtual Reality Applications Center
+	Human-Computer Interaction Graduate Program
+*/
+
+/*
+	Copyright Brett Beauregard 2008-2011.
+	Copyright Iowa State University 2012.
+
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, version 3.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef INCLUDED_arduino_template_pid_h_GUID_8703f8c8_49cd_4687_98bd_2fbd30dbdf78
+#define INCLUDED_arduino_template_pid_h_GUID_8703f8c8_49cd_4687_98bd_2fbd30dbdf78
+
+// Internal Includes
+// - none
+
+// Library/third-party includes
+// - none
+
+// Standard includes
+
+#ifdef ARDUINO
+# if ARDUINO >= 100
+#  include "Arduino.h"
+# else
+#  include "WProgram.h"
+# endif
 #else
-#include "WProgram.h"
+# error "Not yet ported to this platform."
 #endif
 
 template<typename T = double, typename TuningT = double>
-class PID {
+class GenericPID {
 
 
 	public:
@@ -30,16 +67,16 @@ class PID {
 		//Constants used in some of the functions below
 
 		enum PIDMode {
-		    AUTOMATIC = 1,
-		    MANUAL = 0
+			AUTOMATIC = 1,
+			MANUAL = 0
 		};
 		enum PIDDirection {
-		    DIRECT = 0,
-		    REVERSE = 1
+			DIRECT = 0,
+			REVERSE = 1
 		};
 		//commonly used functions **************************************************************************
-		PID(value_type & Input, value_type & Output, value_type & Setpoint,        // * constructor.  links the PID to the Input, Output, and
-		    tuning_value_type Kp, tuning_value_type Ki, tuning_value_type Kd, PIDDirection Direction = DIRECT);     //   Setpoint.  Initial tuning parameters are also set here
+		GenericPID(value_type & Input, value_type & Output, value_type & Setpoint,        // * constructor.  links the PID to the Input, Output, and
+		           tuning_value_type Kp, tuning_value_type Ki, tuning_value_type Kd, PIDDirection Direction = DIRECT);     //   Setpoint.  Initial tuning parameters are also set here
 
 		void SetMode(PIDMode Mode);               // * sets PID to either Manual (0) or Auto (non-0)
 
@@ -130,10 +167,9 @@ class PID {
 		bool justCalced;			// * flag gets set for one cycle after the pid calculates
 };
 
-typedef PID<double> PIDd;
-typedef PID<int> PIDi;
+typedef GenericPID<double> PIDd;
+typedef GenericPID<double> PID;
+typedef GenericPID<int> PIDi;
 
-#include <PID_v1.inl>
 
-#endif
-
+#endif // INCLUDED_arduino_template_pid_h_GUID_8703f8c8_49cd_4687_98bd_2fbd30dbdf78
