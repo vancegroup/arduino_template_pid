@@ -120,15 +120,14 @@ inline void GenericPID<T, TuningT>::SetTunings(GenericPID<T, TuningT>::tuning_va
 	dispKd = Kd;
 
 	tuning_value_type SampleTimeInSec = static_cast<tuning_value_type>(SampleTime) / 1000;
-	kp = Kp;
-	ki = Ki * SampleTimeInSec;
-	kd = Kd / SampleTimeInSec;
-
+	tuning_value_type dir = 1;
 	if (controllerDirection == REVERSE) {
-		kp = - kp;
-		ki = - ki;
-		kd = - kd;
+		dir = -1;
 	}
+	kp = dir * Kp;
+	ki = dir * Ki * SampleTimeInSec;
+	kd = dir * Kd / SampleTimeInSec;
+
 }
 
 /* SetSampleTime(...) *********************************************************
