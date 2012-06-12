@@ -86,9 +86,7 @@ inline void GenericPID<T, TuningT>::Compute() {
 		value_type dInput = (input - lastInput);
 
 		/*Compute PID Output*/
-		value_type output = static_cast<value_type>(kp * error + ITerm - kd * dInput);
-		applyOutputLimit(output);
-		myOutput = output;
+		myOutput = getClampedToOutputLimit(static_cast<value_type>(kp * error + ITerm - kd * dInput));
 
 		/*Remember some variables for next time*/
 		lastInput = input;
@@ -180,9 +178,8 @@ inline void GenericPID<T, TuningT>::SetMode(GenericPID<T, TuningT>::PIDMode Mode
  ******************************************************************************/
 template<typename T, typename TuningT>
 inline void GenericPID<T, TuningT>::Initialize() {
-	ITerm = myOutput;
+	ITerm = getClampedToOutputLimit(myOutput);
 	lastInput = myInput;
-	applyOutputLimit(ITerm);
 }
 
 /* SetControllerDirection(...)*************************************************
