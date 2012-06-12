@@ -72,8 +72,8 @@ class GenericPID {
 			MANUAL = 0
 		};
 		enum PIDDirection {
-			DIRECT = 0,
-			REVERSE = 1
+			DIRECT = 1,
+			REVERSE = -1
 		};
 		//commonly used functions **************************************************************************
 		GenericPID(value_type & Input, value_type & Output, value_type & Setpoint,        // * constructor.  links the PID to the Input, Output, and
