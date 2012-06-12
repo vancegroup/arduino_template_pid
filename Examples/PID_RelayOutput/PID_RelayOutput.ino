@@ -14,7 +14,7 @@
  * window being "Relay Off Time"
  ********************************************************/
 
-#include <PID_v1.h>
+#include <arduino_template_pid.h>
 #define RelayPin 6
 
 //Define Variables we'll be connecting to

@@ -3,7 +3,7 @@
  * Reading analog input 0 to control analog PWM output 3
  ********************************************************/
 
-#include <PID_v1.h>
+#include <arduino_template_pid.h>
 
 //Define Variables we'll be connecting to
 double Setpoint, Input, Output;
