@@ -56,11 +56,11 @@ inline GenericPID<T, TuningT>::GenericPID(GenericPID<T, TuningT>::value_type & I
 	, SampleTime(100)
 	, inAuto(false)
 	, justCalced(false) {
-	PID::SetOutputLimits(0, 255);				//default output limit corresponds to
+	SetOutputLimits(0, 255);				//default output limit corresponds to
 	//the arduino pwm limits
 
-	PID::SetControllerDirection(ControllerDirection);
-	PID::SetTunings(Kp, Ki, Kd);
+	SetControllerDirection(ControllerDirection);
+	SetTunings(Kp, Ki, Kd);
 
 }
 
@@ -180,7 +180,7 @@ inline void GenericPID<T, TuningT>::SetMode(GenericPID<T, TuningT>::PIDMode Mode
 	bool newAuto = (Mode == AUTOMATIC);
 	if (newAuto == !inAuto) {
 		/*we just went from manual to auto*/
-		PID::Initialize();
+		Initialize();
 	}
 	inAuto = newAuto;
 }
