@@ -50,9 +50,9 @@ inline GenericPID<T, TuningT>::GenericPID(GenericPID<T, TuningT>::value_type & I
         GenericPID<T, TuningT>::tuning_value_type Kd,
         GenericPID<T, TuningT>::PIDDirection ControllerDirection)
 	: controllerDirection(ControllerDirection)
-	, myInput(&Input)
-	, myOutput(&Output)
-	, mySetpoint(&Setpoint)
+	, myInput(Input)
+	, myOutput(Output)
+	, mySetpoint(Setpoint)
 	, lastTime(millis() - SampleTime)
 	, SampleTime(100)
 	, outMin(0)		///< default output limit corresponds to the arduino pwm limits
@@ -79,8 +79,8 @@ inline void GenericPID<T, TuningT>::Compute() {
 	timestamp_type timeChange = (now - lastTime);
 	if (timeChange >= SampleTime) {
 		/*Compute all the working error variables*/
-		value_type input = *myInput;
-		value_type error = *mySetpoint - input;
+		value_type input = myInput;
+		value_type error = mySetpoint - input;
 		ITerm += (ki * error);
 		applyOutputLimit(ITerm);
 		value_type dInput = (input - lastInput);
@@ -88,7 +88,7 @@ inline void GenericPID<T, TuningT>::Compute() {
 		/*Compute PID Output*/
 		value_type output = static_cast<value_type>(kp * error + ITerm - kd * dInput);
 		applyOutputLimit(output);
-		*myOutput = output;
+		myOutput = output;
 
 		/*Remember some variables for next time*/
 		lastInput = input;
@@ -154,7 +154,7 @@ inline void GenericPID<T, TuningT>::SetOutputLimits(GenericPID<T, TuningT>::valu
 	outMax = Max;
 
 	if (inAuto) {
-		applyOutputLimit(*myOutput);
+		applyOutputLimit(myOutput);
 		applyOutputLimit(ITerm);
 	}
 }
@@ -180,8 +180,8 @@ inline void GenericPID<T, TuningT>::SetMode(GenericPID<T, TuningT>::PIDMode Mode
  ******************************************************************************/
 template<typename T, typename TuningT>
 inline void GenericPID<T, TuningT>::Initialize() {
-	ITerm = *myOutput;
-	lastInput = *myInput;
+	ITerm = myOutput;
+	lastInput = myInput;
 	applyOutputLimit(ITerm);
 }
 

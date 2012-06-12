@@ -60,7 +60,6 @@ class GenericPID {
 
 	public:
 		typedef T value_type;
-		typedef T value_ptr;
 		typedef TuningT tuning_value_type;
 		typedef unsigned int sample_time_type;
 		typedef unsigned long timestamp_type;
@@ -153,9 +152,9 @@ class GenericPID {
 
 		PIDDirection controllerDirection;
 
-		value_ptr myInput;              // * Pointers to the Input, Output, and Setpoint variables
-		value_ptr myOutput;             //   This creates a hard link between the variables and the
-		value_ptr mySetpoint;           //   PID, freeing the user from having to constantly tell us
+		value_type & myInput;              // * Pointers to the Input, Output, and Setpoint variables
+		value_type & myOutput;             //   This creates a hard link between the variables and the
+		value_type & mySetpoint;           //   PID, freeing the user from having to constantly tell us
 		//   what these values are.  with pointers we'll just know.
 
 		timestamp_type lastTime;
