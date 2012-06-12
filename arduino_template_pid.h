@@ -60,6 +60,7 @@ class GenericPID {
 
 	public:
 		typedef T value_type;
+		typedef T value_ptr;
 		typedef TuningT tuning_value_type;
 		typedef unsigned int sample_time_type;
 		typedef unsigned long timestamp_type;
