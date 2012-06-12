@@ -6,7 +6,9 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-PID	KEYWORD1
+GenericPID	KEYWORD1
+PIDd	KEYWORD1
+PIDi	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -23,6 +25,7 @@ GetKi	KEYWORD2
 GetKd	KEYWORD2
 GetMode	KEYWORD2
 GetDirection	KEYWORD2
+JustCalculated	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
