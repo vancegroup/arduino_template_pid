@@ -170,5 +170,9 @@ class GenericPID {
 typedef GenericPID<double> PIDd;
 typedef GenericPID<int> PIDi;
 
+#define IN_ARDUINO_TEMPLATE_PID_H
+#include <arduino_template_pid.inl>
+#undef IN_ARDUINO_TEMPLATE_PID_H
+
 
 #endif // INCLUDED_arduino_template_pid_h_GUID_8703f8c8_49cd_4687_98bd_2fbd30dbdf78

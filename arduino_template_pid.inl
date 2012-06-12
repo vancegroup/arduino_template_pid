@@ -1,5 +1,5 @@
 /** @file
-	@brief Template Implementations
+	@brief Template Implementations - included from within arduino_template_pid.h
 
 	@date 2008-2012
 
@@ -32,6 +32,10 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#ifndef IN_ARDUINO_TEMPLATE_PID_H
+# error "Do not include arduino_template_pid.inl directly! It is include from within the .h file"
+#endif
 
 /*Constructor (...)*********************************************************
  *    The parameters specified here are those for for which we can't set up
