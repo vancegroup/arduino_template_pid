@@ -191,9 +191,9 @@ inline void GenericPID<T, TuningT>::Initialize() {
 template<typename T, typename TuningT>
 inline void GenericPID<T, TuningT>::SetControllerDirection(GenericPID<T, TuningT>::PIDDirection Direction) {
 	if (inAuto && Direction != controllerDirection) {
-		kp = - kp;
-		ki = - ki;
-		kd = - kd;
+		kp *= -1;
+		ki *= -1;
+		kd *= -1;
 	}
 	controllerDirection = Direction;
 }
