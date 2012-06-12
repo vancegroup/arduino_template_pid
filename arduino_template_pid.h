@@ -134,12 +134,20 @@ class GenericPID {
 		void Initialize();
 
 		template<typename U>
-		void applyOutputLimit(U & val) {
+		void getClampedToOutputLimit(U val) {
+			U ret;
 			if (val > outMax) {
-				val = outMax;
+				ret = outMax;
 			} else if (val < outMin) {
-				val = outMin;
+				ret = outMin;
+			} else {
+				ret = val;
 			}
+			return ret;
+		}
+		template<typename U>
+		void applyOutputLimit(U & val) {
+			val = getClampedToOutputLimit(val)
 		}
 
 		tuning_value_type dispKp;				// * we'll hold on to the tuning parameters in user-entered
