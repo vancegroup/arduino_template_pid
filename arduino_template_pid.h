@@ -168,7 +168,6 @@ class GenericPID {
 };
 
 typedef GenericPID<double> PIDd;
-typedef GenericPID<double> PID;
 typedef GenericPID<int> PIDi;
 
 
