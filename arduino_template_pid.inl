@@ -167,7 +167,7 @@ inline void GenericPID<T, TuningT>::SetOutputLimits(GenericPID<T, TuningT>::valu
 template<typename T, typename TuningT>
 inline void GenericPID<T, TuningT>::SetMode(GenericPID<T, TuningT>::PIDMode Mode) {
 	bool newAuto = (Mode == AUTOMATIC);
-	if (newAuto == !inAuto) {
+	if (newAuto && !inAuto) {
 		/*we just went from manual to auto*/
 		Initialize();
 	}
