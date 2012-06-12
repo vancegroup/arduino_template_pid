@@ -82,11 +82,7 @@ inline void GenericPID<T, TuningT>::Compute() {
 		value_type input = *myInput;
 		value_type error = *mySetpoint - input;
 		ITerm += (ki * error);
-		if (ITerm > outMax) {
-			ITerm = outMax;
-		} else if (ITerm < outMin) {
-			ITerm = outMin;
-		}
+		applyOutputLimit(ITerm);
 		value_type dInput = (input - lastInput);
 
 		/*Compute PID Output*/
